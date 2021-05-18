@@ -1,0 +1,30 @@
+.multiple-counters {
+    background-image: linear-gradient(90deg,rgba(98, 0, 255, 0.555), rgba(0, 162, 255, 0.678));
+    height: auto;
+    padding-bottom: 1em;    
+    box-sizing: border-box;
+    
+    label {
+        display: flex;
+        justify-content: center;
+        padding-top: .3em;
+        padding-bottom: .3em;
+        border-bottom: 2px solid rgb(48, 48, 48);
+        font-size: .8em;
+        font-weight: 600;
+        font-family: 'Lobster', cursive;
+    }
+    
+    .counters-list {
+        display: flex;
+        flex-wrap: wrap;
+        margin: 2em 2em 0 4em;
+    }
+}
+
+@media screen and (max-width: 1119px) {
+    .counters-list {
+        margin: 0em 3em 2em 1.5em;
+        flex-direction: column;
+    }
+}
