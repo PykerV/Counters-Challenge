@@ -1,38 +1,167 @@
-.App {
-  text-align: center;
-}
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
+import styles from './translator.module.scss';
+import DoneIcon from '@material-ui/icons/Done';
+import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
+import KeyboardArrowDownIcon from '@material-ui/icons/KeyboardArrowDown';
+import AssignmentIcon from '@material-ui/icons/Assignment';
+import ScheduleIcon from '@material-ui/icons/Schedule';
+import MultiSelect from 'react-multiselect-checkboxes';
+import { getCookie, setCookie } from '../Utility/cookies';
+import { useSelector, useDispatch } from 'react-redux';
+import { retriveData } from '../StateManager/actionCreator';
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
-}
 
-.App-link {
-  color: #61dafb;
-}
+export default function TranslatorDashboardV() {
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+    const [toggle, setToggle] = useState(false);
+    const [showFilter, setShowFilter] = useState(false);
+    const [originFilter, setOriginFilter] = useState(true);
+    const [val, setVal] = useState('');
+    const [originLanguages, setOriginLanguages] = useState([]);
+    const [destinationLanguages, setDestinationLanguages] = useState([]);
+    const [dataApi, setDataApi] = useState([]);
+
+    const dispatch = useDispatch();
+
+    const { widgetsData, languages } = useSelector(state => state);
+
+    useEffect(
+        () => {
+            async function getData() {
+                const headers = {'Authorization': `Bearer ${getCookie("token")}`};
+                const response = await axios.get('http://staging.api.d4l.ir​/v1/translation/list/pending', { headers: headers });
+                // setDataApi(response);
+                dispatch(retriveData(response));
+                console.log(response.data.data.texts);
+            }
+            getData();
+        },
+        [dispatch]
+    )
+
+
+
+    function handleToggle() {
+        setToggle(!toggle);
+    }
+
+    function handleFilterExpands() {
+        setShowFilter(!showFilter);
+    }
+
+    function handleOriginFilter() {
+        setOriginFilter(true);
+    }
+
+    function handleChangeVal(e) {
+        setVal(e.target.value);
+    }
+
+    function handleOriginFilterResults(selected) {
+        setOriginLanguages(selected);
+        console.log(originLanguages);
+    }
+
+    function handleDestinationResults(selected) {
+        setDestinationLanguages(selected);
+        console.log(destinationLanguages);
+
+    }
+
+
+    
+    return (
+        <div className={styles['dashboard-container']}>
+            <div className={styles['dashboard-accordion-head']}>
+                <p>فعالیت های مترجمی</p>
+                {!toggle
+                 ? <ChevronLeftIcon onClick={handleToggle} />
+                 : <KeyboardArrowDownIcon onClick={handleToggle} />
+                }
+            </div>
+            {toggle && 
+                    <div className={styles['accordion-head-detail']}>
+                        <div className={styles['detail-1']}>
+                          <label>
+                                <span>
+                                    {widgetsData.doneCount}
+                                </span>
+                                <p>
+                                    ترجمه تایید شده
+                                </p>
+                          </label>
+                          <label>
+                                <DoneIcon style={{ fontSize: 60 }}/>
+                          </label>
+                        </div>
+                        <div className={styles['detail-2']}>
+                            <label>
+                                <span>
+                                    {widgetsData.verifedCount}
+                                </span>
+                                <p>
+                                    ترجمه منتظر تایید
+                                </p>
+                            </label>
+                            <label>
+                                <ScheduleIcon style={{ fontSize: 60 }}/>
+                            </label>
+                        </div>
+                        <div className={styles['detail-3']}>
+                            <label>
+                                <span>
+                                    {widgetsData.assignedCount}
+                                </span>
+                                <p>
+                                    ترجمه در دست اقدام
+                                </p>
+                            </label>
+                            <label>
+                                <AssignmentIcon  style={{ fontSize: 60 }}/>
+                            </label>
+                        </div>
+                    </div>
+                }
+                <div className={styles['dashboard-accordion-summary']}>
+                    <p>متن های موجود برای ترجمه</p>
+                </div>
+                <div className={styles['filter-container']}>
+                        <p>
+                            فیلتر
+                            {!showFilter
+                             ? <ChevronLeftIcon onClick={handleFilterExpands} />
+                             : <KeyboardArrowDownIcon onClick={handleFilterExpands} />
+                             }
+                        </p>
+                        {showFilter && 
+                            <div className={styles['filter-options']}>
+                                <div className={styles['origin-filter']}>
+                                    <p>زبان مقصد</p>
+                                            <MultiSelect 
+                                              options={languages}
+                                              width="20vw"
+                                              onChange={selected => handleOriginFilterResults(selected)}
+                                            />
+                                </div>
+                                <div className={styles['destination-filter']}>
+                                    <p>زبان مبدا</p>
+                                            <MultiSelect 
+                                                options={languages}
+                                                width="20vw"
+                                                onChange={selected => handleDestinationResults(selected)}
+                                            />
+                                        <div className={styles['slide-container']}>
+                                            <div>
+                                                
+                                            </div>
+                                        </div>                                        
+                                </div>
+                            </div>
+                        }
+                </div>
+        </div>
+    )
 }
